@@ -3,7 +3,7 @@ path = os.getcwd()
 item_r = 50
 
 class Student:
-    def __init__(self,x,y,r): #img #frames
+    def __init__(self,x,y,r): #?img and frames?
         self.x = x
         self.y = y
         self.r = r
@@ -27,9 +27,9 @@ class Student:
         game.student.x += game.student.vx
         
 class Tool:
-    def __init__(self, x, y): #img
-        self.x = x #left hand
-        self.y = y #from the hand
+    def __init__(self, x, y): #?img?
+        self.x = x
+        self.y = y
         self.vy = 0
         self.y2 = self.y + item_r/2
         self.down = False
@@ -58,12 +58,11 @@ class Tool:
             game.tool.down = False
 
 class Item:
-    def __init__(self, x, y, v): #img
+    def __init__(self, x, y, v): #?img?
         self.x = x
         self.y = y
-        self.v = v #value
+        self.v = v #?value?
         self.hit = False
-        self.collect = True
     
     def display(self):
         stroke(0,0,0)
@@ -76,7 +75,7 @@ class Item:
                     if game.tool.y2+item_r > i.y: #tool's bottom hits item's top
                         i.hit = True
             if i.hit:
-                #attach
+                #attach to magnet
                 i.x = game.tool.x
                 i.y = game.tool.y2+item_r
                 game.tool.vy = -5
@@ -95,11 +94,13 @@ class Game:
         self.tool = Tool(self.student.x - self.student.r, self.student.y)
         self.clicked = False
         
-        #for item's x: divide width by 20 so each "block" is 50 px (50, 100, 150, 200)
-        #for item's y: anywhere below g, no need to divide
         self.items = []
-        for i in range(3): #number should change based on level?
-            self.items.append(Item(random.randint(1,20)*50, random.randint(self.g*2, self.h-50), 5)) #fix value and randint to be variant
+        #?number 3 should change based on level?
+        for i in range(3):
+            #for item's x: divide width by 20 so each "block" is 50 px (50, 100, 150, 200)
+            #for item's y: anywhere below g, no need to divide
+            #?the same randint for x coordinate should not be used again?
+            self.items.append(Item(random.randint(1,20)*50, random.randint(self.g*2, self.h-50), 5))
                         
     def display(self):
         stroke(0, 0, 0)
