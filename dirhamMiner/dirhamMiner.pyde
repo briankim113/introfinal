@@ -1,4 +1,4 @@
-import random, os
+import random, os, time
 path = os.getcwd()
 item_r = 50
 
@@ -9,6 +9,7 @@ class Student:
         self.r = r
         self.vx = 5
         self.direction = RIGHT
+        self.alive = True
     
     def update(self):
         if game.student.x + game.student.r >= game.w:
@@ -21,9 +22,9 @@ class Student:
         self.update()
         if not game.tool.down:
             if self.direction == RIGHT:
-                game.student.vx = 5
+                game.student.vx = 8
             if self.direction == LEFT:
-                game.student.vx = -5
+                game.student.vx = -8
         game.student.x += game.student.vx
         
 class Tool:
@@ -84,6 +85,7 @@ class Item:
                 if i.x - item_r <= game.tool.x and game.tool.x <= i.x + item_r:
                     if game.tool.y2+item_r > i.y: #tool's bottom hits item's top
                         i.hit = True
+
             if i.hit:
                 #attach to magnet
                 i.x = game.tool.x
@@ -102,10 +104,6 @@ class Item:
                        game.score += 10 
                     game.items.remove(i)
                     game.tool.down = False
-       
-
-    
-    
     
 class Game:
     def __init__(self, w, h, g):
@@ -116,10 +114,10 @@ class Game:
         self.tool = Tool(self.student.x - self.student.r, self.student.y)
         self.clicked = False
         self.score = 0
+        self.t = millis()
         self.items = []
-    
+        self.over = False
         
-
         valid_position = False
         for i in range(6): #rocks
             #for item's x: divide width by 20 so each "block" is 50 px (50, 100, 150, 200)
@@ -166,26 +164,37 @@ class Game:
             self.items.append(Item(bagX, bagY, value,2,subtype))
             valid_position = False
             
-       
-                        
     def display(self):
-        stroke(0, 0, 0)
-        fill(0, 0, 140)
-        rect(0, 0, self.w, self.g)
-        fill (150,75,0)
-        rect(0, self.g, self.w, self.h)
-        stroke(0)
-        textSize(20)
-        text("Score:" + str(self.score), 20,65)
-        
-        self.student.display()
-        self.tool.display()
-        for i in self.items:
-            i.display()
+        #game screen
+        if not self.over:
+            stroke(0, 0, 0)
+            fill(0, 0, 140)
+            rect(0, 0, self.w, self.g)
+            fill (150,75,0)
+            rect(0, self.g, self.w, self.h)
+            stroke(0)
+            textSize(20)
+            text("Score: " + str(self.score), 20, 65)
+            self.timer()
+            self.student.display()
+            self.tool.display()
+            for i in self.items:
+                i.display()
+                
+        #between levels / game over
+        #levels counter, if level finish, then count += 1
+        if self.over:
+            text("Time is up!", 400, 400)
 
-    
 
-        
+    def timer(self):
+        begin = 10
+        if self.t > 0:
+            self.t = begin - (millis() / 1000) 
+            text("Timer: " + str(self.t), 1000, 65)
+            if self.t == 0:
+                self.over = True
+
 game = Game(1200, 800, 150) 
                
 def setup():
@@ -195,7 +204,6 @@ def setup():
 def draw():
     background(255, 255, 255)
     game.display()
-    
 
 def mouseClicked():
     global game
