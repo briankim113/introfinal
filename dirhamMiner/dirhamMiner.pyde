@@ -95,7 +95,7 @@ class Item:
                     if i.type == 0:
                         game.score -= 5
                     elif i.type == 1:
-                        game.score += 10
+                        game.score += 15
                     elif i.type == 2 and i.subtype == 0:
                         game.score -= 5
                     elif i.type == 2 and i.subtype == 1:
@@ -121,7 +121,7 @@ class Game:
         
 
         valid_position = False
-        for i in range(8): #rocks
+        for i in range(6): #rocks
             #for item's x: divide width by 20 so each "block" is 50 px (50, 100, 150, 200)
             #for item's y: anywhere below g, no need to divide
             #?the same randint for x coordinate should not be used again?
@@ -138,7 +138,7 @@ class Game:
                         valid_position = True 
             self.items.append(Item(rockX, rockY, -5,0,0))
             valid_position = False
-        for j in range(5): #dirhams
+        for j in range(6): #dirhams
             dirhamX = random.randint(1,20)*50
             dirhamY = random.randint(self.g*2, self.h-50)
             while valid_position == False:
@@ -154,7 +154,7 @@ class Game:
             if subtype == 0:
                 value= -5
             elif subtype == 1:
-                value = 10
+                value = 15
             bagX = random.randint(1,20)*50
             bagY = random.randint(self.g*2, self.h-50)
             while valid_position == False:
