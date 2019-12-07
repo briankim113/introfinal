@@ -50,6 +50,8 @@ class Tool:
         game.tool.x = game.student.x - game.student.r
         game.tool.y = game.student.y
         game.tool.y2 += game.tool.vy
+    
+              
         
         #bounces
         if game.tool.y2 + item_r == game.h:
@@ -79,6 +81,10 @@ class Item:
             fill(128,0,0)
         
         circle(self.x, self.y, item_r)
+        #cat kill condition
+        if game.cat.x <= game.tool.x + item_r and game.cat.x >= game.tool.x - item_r and game.cat.y < game.tool.y2:
+            game.cat.attack = True
+            game.over = True 
         
         for i in game.items:
             if not i.hit:
@@ -104,7 +110,32 @@ class Item:
                        game.score += 10 
                     game.items.remove(i)
                     game.tool.down = False
-    
+                    
+        
+class Cat:
+    def __init__(self,x,y,r): #?img?
+        self.x = x
+        self.y = y
+        self.r = r 
+        self.vx = 8
+        self.vy = 8
+        self.direction_list = [RIGHT,LEFT, UP,DOWN]
+        self.direction = self.direction_list[random.randint(0,3)]
+        self.attack = False
+        
+    def display(self):
+        stroke(75,0,130)
+        fill (75,0,130) 
+        circle(self.x,self.y,self.r)
+        if not game.over:
+            #so it bounces off the boundaries 
+            if game.cat.y > game.h - item_r or game.cat.y < item_r + game.g:
+                game.cat.vy *= -1
+            if game.cat.x > game.w - item_r or game.cat.x < item_r:
+                game.cat.vx *= -1
+        #movement        
+        game.cat.x += game.cat.vx
+        game.cat.y += game.cat.vy
 class Game:
     def __init__(self, w, h, g):
         self.w = w
@@ -112,6 +143,7 @@ class Game:
         self.g = g
         self.student = Student(self.w/2, self.g-50, self.g/3)
         self.tool = Tool(self.student.x - self.student.r, self.student.y)
+        self.cat = Cat(random.randint(1,20)*50, random.randint(self.g*2, self.h-50), item_r)
         self.clicked = False
         self.score = 0
         self.t = millis()
@@ -164,6 +196,8 @@ class Game:
             self.items.append(Item(bagX, bagY, value,2,subtype))
             valid_position = False
             
+            
+            
     def display(self):
         #game screen
         if not self.over:
@@ -178,17 +212,21 @@ class Game:
             self.timer()
             self.student.display()
             self.tool.display()
+            self.cat.display()
             for i in self.items:
                 i.display()
                 
         #between levels / game over
         #levels counter, if level finish, then count += 1
-        if self.over:
+        if self.over and self.t == 0:
             text("Time is up!", 400, 400)
+            #different end game messages
+        elif self.over and self.cat.attack == True:
+            text("you were KILLED by a campus cat!", 400,400)
 
 
     def timer(self):
-        begin = 10
+        begin = 60
         if self.t > 0:
             self.t = begin - (millis() / 1000) 
             text("Timer: " + str(self.t), 1000, 65)
