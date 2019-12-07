@@ -22,10 +22,11 @@ class Student:
         self.update()
         if not game.tool.down:
             if self.direction == RIGHT:
-                game.student.vx = 8
+                game.student.vx = 7
             if self.direction == LEFT:
-                game.student.vx = -8
+                game.student.vx = -7
         game.student.x += game.student.vx
+        
         
 class Tool:
     def __init__(self, x, y): #?img?
@@ -35,23 +36,13 @@ class Tool:
         self.y2 = self.y + item_r/2
         self.down = False
 
-    def display(self):
-        pushStyle()
-        stroke(255,0,0)
-        strokeWeight(3)
-        line(self.x, self.y, self.x, self.y2)
-        popStyle()
-        #added magnet
-        stroke(255,255,255)
-        fill(255,255,255)
-        circle(self.x, self.y2+item_r/2, item_r)
-        
-        #tool moves
-        game.tool.x = game.student.x - game.student.r
+    def move(self):
+        if game.student.direction == LEFT:
+            game.tool.x = game.student.x - game.student.r
+        if game.student.direction == RIGHT:
+            game.tool.x = game.student.x + game.student.r
         game.tool.y = game.student.y
         game.tool.y2 += game.tool.vy
-    
-              
         
         #bounces
         if game.tool.y2 + item_r == game.h:
@@ -59,18 +50,34 @@ class Tool:
         if game.tool.y2 == game.tool.y + item_r/2:
             game.tool.vy = 0
             game.tool.down = False
-
-class Item:
-    def __init__(self, x, y, v,type,subtype): #?img?
-        self.x = x
-        self.y = y
-        self.v = v #?value?
-        self.hit = False
-        self.type = type #type 0 will be rocks, 1 for dirhams, and 2 for mystery bag
-        self.subtype = subtype #for mystery bag
     
     def display(self):
-        if self.type == 0: #?later on the load image could be under these if conditions?
+        #string
+        pushStyle()
+        stroke(255,0,0)
+        strokeWeight(3)
+        line(self.x, self.y, self.x, self.y2)
+        popStyle()
+        
+        #magnet
+        stroke(255,255,255)
+        fill(255,255,255)
+        circle(self.x, self.y2+item_r/2, item_r)
+        
+        self.move()
+    
+    
+class Item:
+    def __init__(self, x, y, type, subtype): #?img?
+        self.x = x
+        self.y = y
+        self.type = type #type 0 will be rocks, 1 for dirhams, and 2 for mystery bag
+        self.subtype = subtype #for mystery bag
+        self.hit = False
+
+            
+    def display(self):
+        if self.type == 0:
             stroke(0,0,0) #black for rocks
             fill(0,0,0)
         elif self.type == 1:
@@ -79,159 +86,238 @@ class Item:
         elif self.type ==2:
             stroke(128,0,0) #red for mystery bag
             fill(128,0,0)
-        
         circle(self.x, self.y, item_r)
-        #cat kill condition
-        if game.cat.x <= game.tool.x + item_r and game.cat.x >= game.tool.x - item_r and game.cat.y < game.tool.y2:
-            game.cat.attack = True
-            game.over = True 
-        
+                
         for i in game.items:
             if not i.hit:
                 if i.x - item_r <= game.tool.x and game.tool.x <= i.x + item_r:
                     if game.tool.y2+item_r > i.y: #tool's bottom hits item's top
                         i.hit = True
-
-            if i.hit:
+            else:
                 #attach to magnet
                 i.x = game.tool.x
                 i.y = game.tool.y2+item_r
                 game.tool.vy = -5
+                
                 #goes up
                 if game.tool.y2 <= game.tool.y + item_r/2:
                     game.tool.vy = 0
-                    if i.type == 0:
+                    if i.type == 0 or i.subtype == 0:
                         game.score -= 5
                     elif i.type == 1:
-                        game.score += 15
-                    elif i.type == 2 and i.subtype == 0:
-                        game.score -= 5
-                    elif i.type == 2 and i.subtype == 1:
-                       game.score += 10 
+                        game.score += 10
+                    elif i.subtype == 1:
+                        game.score += 20
                     game.items.remove(i)
                     game.tool.down = False
-                    
+        
         
 class Cat:
-    def __init__(self,x,y,r): #?img?
+    def __init__(self,x,y,r): #img
         self.x = x
         self.y = y
         self.r = r 
-        self.vx = 8
-        self.vy = 8
-        self.direction_list = [RIGHT,LEFT, UP,DOWN]
+        self.vx = 2
+        self.vy = 2
+        self.direction_list = [RIGHT, LEFT, UP, DOWN]
         self.direction = self.direction_list[random.randint(0,3)]
-        self.attack = False
+    
+    def move(self):
         
+        #so it bounces off the boundaries 
+        if game.cat.y > game.h - item_r or game.cat.y < item_r + game.g:
+            game.cat.vy *= -1
+        if game.cat.x > game.w - item_r or game.cat.x < item_r:
+            game.cat.vx *= -1
+            
+        game.cat.x += game.cat.vx
+        game.cat.y += game.cat.vy
+    
+    def kill(self):
+        if game.cat.x <= game.tool.x + item_r and game.cat.x >= game.tool.x - item_r and game.cat.y <= game.tool.y2 + item_r and game.cat.y >= game.tool.y2 - item_r:
+            game.screen = 2
+    
     def display(self):
         stroke(75,0,130)
         fill (75,0,130) 
         circle(self.x,self.y,self.r)
-        if not game.over:
-            #so it bounces off the boundaries 
-            if game.cat.y > game.h - item_r or game.cat.y < item_r + game.g:
-                game.cat.vy *= -1
-            if game.cat.x > game.w - item_r or game.cat.x < item_r:
-                game.cat.vx *= -1
-        #movement        
-        game.cat.x += game.cat.vx
-        game.cat.y += game.cat.vy
+        self.move()
+        self.kill()        
+        
+        
 class Game:
     def __init__(self, w, h, g):
         self.w = w
         self.h = h
         self.g = g
+        self.t = millis()
+        
         self.student = Student(self.w/2, self.g-50, self.g/3)
         self.tool = Tool(self.student.x - self.student.r, self.student.y)
+        #fix Cat's starting position?
         self.cat = Cat(random.randint(1,20)*50, random.randint(self.g*2, self.h-50), item_r)
-        self.clicked = False
-        self.score = 0
-        self.t = millis()
         self.items = []
-        self.over = False
+
+        self.level = 1
+        self.goal = 0
+        self.food = ""
+        self.score = 0
+        self.screen = -1
         
-        valid_position = False
-        for i in range(6): #rocks
-            #for item's x: divide width by 20 so each "block" is 50 px (50, 100, 150, 200)
-            #for item's y: anywhere below g, no need to divide
-            #?the same randint for x coordinate should not be used again?
-            rockX = random.randint(1,20)*50 #saving the random position in the var to be able to check  
-            rockY = random.randint(self.g*2, self.h-50)
-            if len(self.items) ==0:
-                    if len(self.items) == 0:
-                        self.items.append(Item(rockX, rockY, -5,0,0))
-            while valid_position == False:
-                for i in range (len(self.items)):
-                    rockX = random.randint(1,20)*50
-                    rockY = random.randint(self.g*2, self.h-50)
-                    if self.items[i].x != rockX and self.items[i].y != rockY: 
-                        valid_position = True 
-            self.items.append(Item(rockX, rockY, -5,0,0))
-            valid_position = False
-        for j in range(6): #dirhams
-            dirhamX = random.randint(1,20)*50
-            dirhamY = random.randint(self.g*2, self.h-50)
-            while valid_position == False:
-                for i in range (len(self.items)):
-                    rockX = random.randint(1,20)*50
-                    rockY = random.randint(self.g*2, self.h-50)
-                    if self.items[i].x != dirhamX and self.items[i].y != dirhamY: 
-                        valid_position = True 
-            self.items.append(Item(dirhamX, dirhamY, 10,1,1))
-            valid_position = False
-        for k in range(2): #mysterybags
-            subtype= random.randint(0,1)
-            if subtype == 0:
-                value= -5
-            elif subtype == 1:
-                value = 15
-            bagX = random.randint(1,20)*50
-            bagY = random.randint(self.g*2, self.h-50)
-            while valid_position == False:
-                for i in range (len(self.items)):
-                    bagX = random.randint(1,20)*50
-                    bagY = random.randint(self.g*2, self.h-50)
-                    if self.items[i].x != bagX and self.items[i].y != bagY: 
-                        valid_position = True 
-            self.items.append(Item(bagX, bagY, value,2,subtype))
-            valid_position = False
+        self.create_items()    
+        
+    def create_items(self):
+        if self.level == 1:
+            num_rocks = 4
+            num_dirhams = 5 
+            num_bags = 1
+        elif self.level == 2:
+            num_rocks = 4
+            num_dirhams = 5 
+            num_bags = 2
+        elif self.level == 3:
+            num_rocks = 5
+            num_dirhams = 5 
+            num_bags = 2
+        elif self.level == 4:
+            num_rocks = 5
+            num_dirhams = 6 
+            num_bags = 2
+        elif self.level == 5:
+            num_rocks = 0
+            num_dirhams = 0
+            num_bags = 10
+        
+        for num in range(num_rocks): #rocks
+            x = random.randrange(0 + item_r, self.w - item_r, 60)
+            y = random.randrange(self.g + item_r, self.h - item_r, 60)
+    
+            for item in self.items:
+                if x == item.x:
+                    x = random.randrange(0 + item_r, self.w - item_r, 60)
             
+            self.items.append(Item(x,y,0,2))
+       
+        for num in range(num_dirhams): #dirhams
+            x = random.randrange(0 + item_r, self.w - item_r, 60)
+            y = random.randrange(self.g + item_r, self.h - item_r, 60)
+    
+            for item in self.items:
+                if x == item.x:
+                    x = random.randrange(0 + item_r, self.w - item_r, 60)
             
+            self.items.append(Item(x,y,1,2)) 
+            
+        for num in range(num_bags): #mysterybags
+            subtype = random.randint(0,1)
+            
+            x = random.randrange(0 + item_r, self.w - item_r, 60)
+            y = random.randrange(self.g + item_r, self.h - item_r, 60)
+    
+            for item in self.items:
+                if x == item.x:
+                    x = random.randrange(0 + item_r, self.w - item_r, 60)
+            
+            self.items.append(Item(x,y,2,subtype))
+
             
     def display(self):
-        #game screen
-        if not self.over:
-            stroke(0, 0, 0)
-            fill(0, 0, 140)
+        left = 350
+        right = 500
+        
+        if self.screen == -1:
+            fill(0,0,0)
+            textSize(40)
+            text("DIRHAM MINER", left, 75, right, self.h)
+            
+            textSize(20)            
+            text("You are hungry and want to eat a hearty breakfast. But you ran out of dirhams, so let's go mine some.", left, 175, right, self.h)
+            text("Objective: Reach the goal amount of dirhams within 60 seconds and pass all five levels!", left, 275, right, self.h)
+            text("Scoring", left, 435, right, self.h)
+
+            textSize(17)
+            text("Warning: Beware of the Campus Cat...", left, 370, right, self.h)
+            text("Dirham = 10", left, 475, right, self.h)
+            text("Rock = -5", left, 500, right, self.h)
+            text("Mystery Bag = -5 OR 20 (test your luck!)", left, 525, right, self.h)
+            text("Created by: Sarah Al-Yahya & Brian Kim", left, 700, right, self.h)
+            
+            textSize(25)
+            text("Click to begin!", left, 625, right, self.h)
+        
+        if self.screen == 0:
+            stroke(255,255,255)
+            fill(135,206,235)
             rect(0, 0, self.w, self.g)
-            fill (150,75,0)
+            fill(245,245,220)
             rect(0, self.g, self.w, self.h)
-            stroke(0)
-            textSize(20)
-            text("Score: " + str(self.score), 20, 65)
-            self.timer()
+            
             self.student.display()
             self.tool.display()
             self.cat.display()
             for i in self.items:
                 i.display()
-                
-        #between levels / game over
-        #levels counter, if level finish, then count += 1
-        if self.over and self.t == 0:
-            text("Time is up!", 400, 400)
-            #different end game messages
-        elif self.over and self.cat.attack == True:
-            text("you were KILLED by a campus cat!", 400,400)
+            
+            self.board()
+            
+            if self.level == 1:
+                self.goal = 15
+                self.food = "Banana"
+            elif self.level == 2:
+                self.goal = 20
+                self.food = "Bread"
+            elif self.level == 3:
+                self.goal = 25
+                self.food = "Milk"
+            elif self.level == 4:
+                self.goal = 30
+                self.food = "Cereal"
+            elif self.level == 5:
+                self.goal = 40
+                self.food = "Nutella"
+            
+            if self.score >= self.goal:
+                self.level += 1
+                if self.level < 6: #next level pass
+                    self.score = 0
+                    self.screen = 4
+                    self.items = []
+                    self.create_items()
+                else: #pass all five screens = win
+                    self.screen = 3
+                        
+        if self.screen == 1:
+            text("Time is up - GAME OVER", 0, 400, self.w, self.h)
+            text("Click to play again!", 0, 450, self.w, self.h)
+        if self.screen == 2:
+            text("You were KILLED by a campus cat!", 0, 400, self.w, self.h)
+            text("Click to play again!", 0, 450, self.w, self.h)
+        if self.screen == 3:
+            text("You WON! Congrats on your breakfast :)", 0, 400, self.w, self.h)
+            text("Click to play again!", 0, 450, self.w, self.h)
+        if self.screen == 4:
+            text("Level " + str(self.level - 1) + " complete!", 0, 400, self.w, self.h)
+            text("Click to move to the next level!", 0, 450, self.w, self.h)
+        textAlign(CENTER)
 
+    def board(self):
+        #FIX BOARD textAlign works weird?
+        textSize(20)
+        fill(0,0,0)
+        text("LEVEL " + str(self.level), 20, 40)
+        text("FOOD: " + self.food, 20, 65)
+        text("GOAL: " + str(self.goal) + " aed", 1050, 40)
+        text("BALANCE: " + str(self.score) + " aed", 1050, 65)
+        self.timer()
 
     def timer(self):
-        begin = 60
+        #fix time to start not in the beginning but when the level starts
+        begin = 100
         if self.t > 0:
             self.t = begin - (millis() / 1000) 
-            text("Timer: " + str(self.t), 1000, 65)
+            text("TIME: " + str(self.t), 1050, 115)
             if self.t == 0:
-                self.over = True
+                self.screen = 1
 
 game = Game(1200, 800, 150) 
                
@@ -245,8 +331,12 @@ def draw():
 
 def mouseClicked():
     global game
-    #only when the tool hasn't moved
-    if game.tool.y2 == (game.tool.y + item_r/2):
-        game.tool.down = True
-        game.student.vx = 0
-        game.tool.vy = 5
+    if game.screen == 0:
+        if game.tool.y2 == (game.tool.y + item_r/2):
+            game.tool.down = True
+            game.student.vx = 0
+            game.tool.vy = 5
+    if game.screen == -1 or game.screen == 4:
+        game.screen = 0
+    elif game.screen != 0:
+        game = Game(1200, 800, 150)
