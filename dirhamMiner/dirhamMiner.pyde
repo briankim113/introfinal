@@ -31,11 +31,14 @@ class Student:
         
         
 class Tool:
-    def __init__(self, x, y): #?img?
+    def __init__(self, x, y): 
         self.x = x
         self.y = y
         self.vy = 0
         self.y2 = self.y + item_r/2
+        #self.img = loadImage (path + "/images/" + img)
+        self.img = loadImage(path + "/images/" + "tool.png")
+
         self.down = False
         self.sound = player.loadFile(path + "/sounds/rock.mp3")
 
@@ -67,7 +70,10 @@ class Tool:
         #magnet
         stroke(255,255,255)
         fill(255,255,255)
-        circle(self.x, self.y2+item_r/2, item_r)
+        #image
+        image(self.img, self.x-item_r/2, self.y2, item_r, item_r)
+
+        # circle(self.x, self.y2+item_r/2, item_r)
         
         self.move()
     
@@ -80,23 +86,28 @@ class Item:
         self.subtype = subtype #for mystery bag
         self.hit = False
         
+        self.img0 = loadImage(path + "/images/" + "rock2.png")
+        self.img1 = loadImage(path + "/images/" + "dirham.png")
+        self.img2 = loadImage(path + "/images/" + "mysterybag2.png")
+
+        
         self.sound = 0
         
-        # self.rock_sound = player.loadFile(path + "/sounds/rock.mp3")
-        # self.dirham_sound = player.loadFile(path + "/sounds/dirham.mp3")
+        self.rock_sound = player.loadFile(path + "/sounds/rock.mp3")
+        self.dirham_sound = player.loadFile(path + "/sounds/dirham.mp3")
         
     def display(self):
         if self.type == 0:
-            stroke(0,0,0) #black for rocks
-            fill(0,0,0)
+            img = self.img0
+
         elif self.type == 1:
-            stroke(52,73,40) #green for dirhams
-            fill(52,73,40)
+           img = self.img1
+            
         elif self.type ==2:
-            stroke(128,0,0) #red for mystery bag
-            fill(128,0,0)
-        circle(self.x, self.y, item_r)
-                
+           img = self.img2
+                        
+        image(img, self.x-item_r/2, self.y-item_r/2, item_r, item_r)
+                        
         for i in game.items:
             if not i.hit:
                 if i.x - (item_r/1.3) <= game.tool.x and game.tool.x <= i.x + (item_r/1.3):
@@ -112,6 +123,7 @@ class Item:
                 if game.tool.y2 <= game.tool.y + item_r/2:
                     game.tool.vy = 0
                     if i.type == 0 or i.subtype == 0:
+                        
                         self.sound = player.loadFile(path + "/sounds/rock.mp3")
                         self.sound.play()
                         game.score -= 5
@@ -170,6 +182,10 @@ class Game:
         self.h = h
         self.g = g
         self.t = 30
+        
+        
+        self.bg = loadImage(path + "/images/" + "background.png")
+        
         
         self.background_sound = player.loadFile(path + "/sounds/background.mp3")        
         self.background_sound.loop()
@@ -274,6 +290,10 @@ class Game:
             self.items.append(Item(x,y,2,subtype))
             
     def display(self):
+        
+        
+        image(self.bg, 0, 0 , self.w, self.h)
+        
         left = 200
         right = 800
                 
@@ -299,11 +319,12 @@ class Game:
             text("Click to begin!", left, 650, self.w, self.h)
         
         if self.screen == 0:
+            image(self.bg, 0, 0 , self.w, self.h) 
             stroke(255,255,255)
-            fill(135,206,235)
-            rect(0, 0, self.w, self.g)
-            fill(245,245,220)
-            rect(0, self.g, self.w, self.h)
+            #fill(135,206,235)
+            #rect(0, 0, self.w, self.g)
+            #fill(245,245,220)
+            #rect(0, self.g, self.w, self.h)
             
             self.student.display()
             self.tool.display()
@@ -380,10 +401,9 @@ game = Game(1200, 800, 150)
                
 def setup():
     size(game.w, game.h)
-    background(255, 255, 255)
-    
+    # background(255, 255, 255)
 def draw():
-    background(255, 255, 255)
+    # background(255, 255, 255)
     game.display()
 
 def mouseClicked():
