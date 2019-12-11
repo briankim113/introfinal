@@ -36,10 +36,9 @@ class Tool:
         self.y = y
         self.vy = 0
         self.y2 = self.y + item_r/2
-        #self.img = loadImage (path + "/images/" + img)
-        self.img = loadImage(path + "/images/" + "tool.png")
-
         self.down = False
+        
+        self.img = loadImage(path + "/images/" + "tool.png")
         self.sound = player.loadFile(path + "/sounds/rock.mp3")
 
     def move(self):
@@ -52,9 +51,9 @@ class Tool:
         
         #bounces
         if self.y2 + item_r == game.h:
-            self.sound.rewind()
+            # self.sound.rewind()
             self.vy = -5
-            self.sound.play()
+            # self.sound.play()
         if self.y2 == game.tool.y + item_r/2:
             self.vy = 0
             self.down = False
@@ -70,7 +69,6 @@ class Tool:
         #magnet
         stroke(255,255,255)
         fill(255,255,255)
-        #image
         image(self.img, self.x-item_r/2, self.y2, item_r, item_r)
 
         # circle(self.x, self.y2+item_r/2, item_r)
@@ -89,22 +87,18 @@ class Item:
         self.img0 = loadImage(path + "/images/" + "rock2.png")
         self.img1 = loadImage(path + "/images/" + "dirham.png")
         self.img2 = loadImage(path + "/images/" + "mysterybag2.png")
-
         
         self.sound = 0
-        
         self.rock_sound = player.loadFile(path + "/sounds/rock.mp3")
         self.dirham_sound = player.loadFile(path + "/sounds/dirham.mp3")
         
     def display(self):
         if self.type == 0:
             img = self.img0
-
         elif self.type == 1:
-           img = self.img1
-            
-        elif self.type ==2:
-           img = self.img2
+            img = self.img1
+        elif self.type == 2:
+            img = self.img2
                         
         image(img, self.x-item_r/2, self.y-item_r/2, item_r, item_r)
                         
@@ -123,7 +117,6 @@ class Item:
                 if game.tool.y2 <= game.tool.y + item_r/2:
                     game.tool.vy = 0
                     if i.type == 0 or i.subtype == 0:
-                        
                         self.sound = player.loadFile(path + "/sounds/rock.mp3")
                         self.sound.play()
                         game.score -= 5
@@ -153,7 +146,6 @@ class Cat:
         self.cat_sound = player.loadFile(path + "/sounds/cat.mp3")
     
     def move(self):
-
         #so it bounces off the boundaries 
         if self.y > game.h - item_r or self.y < item_r + game.g:
             self.vy *= -1
@@ -165,12 +157,13 @@ class Cat:
     
     def kill(self):
         if self.x <= game.tool.x + (item_r/1.3) and self.x >= game.tool.x - (item_r/1.3) and self.y <= game.tool.y2 + (item_r/1.5) and self.y >= game.tool.y2 - (item_r/1.5):
+            self.cat_sound.rewind()
             self.cat_sound.play()
             game.screen = 2
     
     def display(self):
         stroke(75,0,130)
-        fill (75,0,130) 
+        fill(75,0,130) 
         circle(self.x,self.y,self.r)
         self.move()
         self.kill()        
@@ -183,16 +176,12 @@ class Game:
         self.g = g
         self.t = 30
         
-        
         self.bg = loadImage(path + "/images/" + "background.png")
-        
-        
         self.background_sound = player.loadFile(path + "/sounds/background.mp3")        
-        self.background_sound.loop()
         
-        self.student = Student(self.w/2, self.g-50, self.g/3)
+        self.student = Student(self.w/2, self.g-50, item_r)
         self.tool = Tool(self.student.x - self.student.r, self.student.y)
-        #fix Cat's starting position?
+
         self.cat = Cat(random.randint(1,20)*50, random.randint(self.g*2, self.h-50), item_r)
         self.items = []
 
@@ -246,8 +235,7 @@ class Game:
             num_rocks = 0
             num_dirhams = 0
             num_bags = 15
-        
-                                                
+                                    
         for num in range(num_rocks):
             y = random.randrange(self.g + item_r, self.h - item_r, 60)
             valid = False
@@ -290,36 +278,35 @@ class Game:
             self.items.append(Item(x,y,2,subtype))
             
     def display(self):
-        
-        
-        image(self.bg, 0, 0 , self.w, self.h)
+        image(self.bg, 0, -400)
         
         left = 200
         right = 800
-                
+              
+        #instructions
         if self.screen == -1:
             fill(0,0,0)
             textSize(40)
             text("DIRHAM MINER", left, 75, self.w, self.h)
             
             textSize(20)            
-            text("You are hungry and want to eat a hearty breakfast. But you ran out of campus dirhams, so let's go mine some in the sand!", left, 175, right, self.h)
-            text("Instructions: Reach the goal dirhams within 30 seconds for each level. Pass all five to have good breakfast!", left, 275, right, self.h)
-            text("Control: Left-Click to bring the magnet down!", left, 350, right, self.h)
+            text("You are hungry and want to eat a hearty breakfast. But you ran out of campus dirhams, so let's go mine some in the sand!", left, 250, right, self.h)
+            text("Instructions: Reach the goal dirhams within 30 seconds for each level. Pass all five to have good breakfast!", left, 325, right, self.h)
+            text("Left-Click = Magnet Down", left, 400, right, self.h)
             text("Scoring", left, 490, self.w, self.h)
 
             textSize(17)
-            text("Warning: Beware of the Campus Cat...", left, 400, right, self.h)
+            text("Created by: Sarah Al-Yahya & Brian Kim", left, 140, right, self.h)
             text("Dirham = 10", left, 525, right, self.h)
             text("Rock = -5", left, 550, right, self.h)
             text("Mystery Bag = -5 OR 20 (test your luck!)", left, 575, right, self.h)
-            text("Created by: Sarah Al-Yahya & Brian Kim", left, 700, right, self.h)
+            text("Warning: Beware of the Campus Cat...", left, 750, right, self.h)
             
             textSize(25)
             text("Click to begin!", left, 650, self.w, self.h)
         
+        #game screen
         if self.screen == 0:
-            image(self.bg, 0, 0 , self.w, self.h) 
             stroke(255,255,255)
             #fill(135,206,235)
             #rect(0, 0, self.w, self.g)
@@ -353,30 +340,31 @@ class Game:
             if self.score >= self.goal:
                 self.level += 1
                 if self.level < 6: #next level pass
+                    self.screen = 4
                     self.update_cat()  
                     self.score = 0
-                    self.screen = 4
                     self.items = []
                     self.create_items()
                 else: #pass all five screens = win
                     self.screen = 3
         
+        #game over screens - need images! - is laggy?
         x = 400
         y = 400
         
         if self.screen == 1:
             text("TIME IS UP - GAME OVER", x, y)
             text("Click to play again!", x, y + 50)
-        if self.screen == 2:
+        elif self.screen == 2:
             text("You were KILLED by a campus cat!", x, y)
             text("Click to play again!", x, y + 50)
-        if self.screen == 3:
+        elif self.screen == 3:
             text("You WON! Congrats on your breakfast :)", x, y)
             text("Click to play again!", x, y + 50)
-        if self.screen == 4:
+        elif self.screen == 4:
             text("Level " + str(self.level - 1) + " complete!", x, y)
             text("Click to move to the next level!", x, y + 50)
-        if self.screen == 5:
+        elif self.screen == 5:
             text("You have ran out of items to dig!", x, y)
             text("Click to start again!", x, y + 50)    
 
@@ -397,13 +385,16 @@ class Game:
         if self.t == 0:
             self.screen = 1
 
-game = Game(1200, 800, 150) 
-               
+game = Game(1200, 800, 230) 
+
 def setup():
     size(game.w, game.h)
-    # background(255, 255, 255)
+    myFont = createFont("Seravek", 32);
+    textFont(myFont);
+    background(255, 255, 255)
+    
 def draw():
-    # background(255, 255, 255)
+    background(255, 255, 255)
     game.display()
 
 def mouseClicked():
@@ -417,6 +408,5 @@ def mouseClicked():
         game.t = 30
         game.screen = 0
     elif game.screen != 0:
-        game.background_sound.pause()
-        game.background_sound.rewind()
-        game = Game(1200, 800, 150)
+        game.background_sound.close()
+        game = Game(1200, 800, 230)
