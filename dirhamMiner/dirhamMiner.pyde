@@ -312,7 +312,7 @@ class Game:
             textSize(20)            
             text("You are hungry and want to eat a hearty breakfast. But you ran out of campus dirhams, so let's go mine some in the sand!", left, 250, right, self.h)
             text("Instructions: Reach the goal dirhams within 30 seconds for each level. Pass all five to have good breakfast!", left, 325, right, self.h)
-            text("Left-Click = Magnet Down", left, 400, right, self.h)
+            text("Mouse Click = Magnet Down", left, 400, right, self.h)
             text("Scoring", left, 490, self.w, self.h)
 
             textSize(17)
