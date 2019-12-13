@@ -9,9 +9,12 @@ class Student:
         self.x = x
         self.y = y
         self.r = r
+        self.h = r*4
+        self.w = r*3
         self.vx = 5
         self.direction = RIGHT
         self.alive = True
+        self.img = loadImage(path + "/images/" + "student.png")
     
     def update(self):
         if game.student.x + game.student.r >= game.w:
@@ -20,7 +23,11 @@ class Student:
             self.direction = RIGHT
     
     def display(self):
-        circle(self.x,self.y,self.r*2)
+        # circle(self.x,self.y,self.r*2)
+        if self.direction == RIGHT:
+            image(self.img, self.x-(self.r*1.5), self.y-(self.r*2), self.w, self.h)
+        elif self.direction == LEFT:
+            image(self.img, self.x-(self.r*1.5), self.y-(self.r*2), self.w, self.h, 2000, 0, 0, 3000)
         self.update()
         if not game.tool.down:
             if self.direction == RIGHT:
@@ -51,9 +58,9 @@ class Tool:
         
         #bounces
         if self.y2 + item_r == game.h:
-            # self.sound.rewind()
+            self.sound.rewind()
             self.vy = -5
-            # self.sound.play()
+            self.sound.play()
         if self.y2 == game.tool.y + item_r/2:
             self.vy = 0
             self.down = False
@@ -61,9 +68,13 @@ class Tool:
     def display(self):
         #string
         pushStyle()
-        stroke(255,0,0)
+        stroke(0,0,0)
         strokeWeight(3)
-        line(self.x, self.y, self.x, self.y2)
+        line(self.x, self.y - item_r/2, self.x, self.y2)
+        if game.student.direction == RIGHT:
+            line(game.student.x+item_r/2.5, self.y - item_r/2, self.x, self.y - item_r/2)
+        elif game.student.direction == LEFT:
+            line(self.x, self.y - item_r/2, game.student.x-item_r/2.5, self.y - item_r/2)
         popStyle()
         
         #magnet
@@ -144,6 +155,7 @@ class Cat:
         self.direction_list = [RIGHT, LEFT, UP, DOWN]
         self.direction = self.direction_list[random.randint(0,3)]
         self.cat_sound = player.loadFile(path + "/sounds/cat.mp3")
+        self.img = loadImage(path + "/images/" + "cat.png")
     
     def move(self):
         #so it bounces off the boundaries 
@@ -164,7 +176,8 @@ class Cat:
     def display(self):
         stroke(75,0,130)
         fill(75,0,130) 
-        circle(self.x,self.y,self.r)
+        # circle(self.x,self.y,self.r)
+        image(self.img, self.x-self.r, self.y-self.r, self.r*2, self.r*2)
         self.move()
         self.kill()        
         
@@ -177,7 +190,8 @@ class Game:
         self.t = 30
         
         self.bg = loadImage(path + "/images/" + "background.png")
-        self.background_sound = player.loadFile(path + "/sounds/background.mp3")        
+        self.background_sound = player.loadFile(path + "/sounds/background.mp3")
+        self.background_sound.play()
         
         self.student = Student(self.w/2, self.g-50, item_r)
         self.tool = Tool(self.student.x - self.student.r, self.student.y)
@@ -185,6 +199,12 @@ class Game:
         self.cat = Cat(random.randint(1,20)*50, random.randint(self.g*2, self.h-50), item_r)
         self.items = []
 
+        self.banana = loadImage(path + "/images/" + "banana.png")
+        self.bread = loadImage(path + "/images/" + "bread.png")
+        self.milk = loadImage(path + "/images/" + "milk.png")
+        self.cereal = loadImage(path + "/images/" + "cereal.png")
+        self.nutella = loadImage(path + "/images/" + "nutella.png")
+        
         self.level = 1
         self.goal = 0
         self.food = ""
@@ -334,7 +354,7 @@ class Game:
                 self.goal = 45
                 self.food = "Cereal"
             elif self.level == 5:
-                self.goal = 60
+                self.goal = 65
                 self.food = "Nutella"
             
             if self.score >= self.goal:
@@ -358,12 +378,29 @@ class Game:
         elif self.screen == 2:
             text("You were KILLED by a campus cat!", x, y)
             text("Click to play again!", x, y + 50)
+            image(self.cat.img, x + (item_r * 8), y - item_r, item_r * 3, item_r * 3)
+            
         elif self.screen == 3:
             text("You WON! Congrats on your breakfast :)", x, y)
             text("Click to play again!", x, y + 50)
+            image(self.banana, 125, y + item_r * 2, item_r * 3, item_r * 3)
+            image(self.bread, 325, y + item_r * 2, item_r * 3, item_r * 3)
+            image(self.milk, 525, y + item_r * 2, item_r * 3, item_r * 3)
+            image(self.cereal, 675, y + item_r * 2, item_r * 5, item_r * 3)
+            image(self.nutella, 950, y + item_r * 2, item_r * 3, item_r * 3)
+
         elif self.screen == 4:
             text("Level " + str(self.level - 1) + " complete!", x, y)
             text("Click to move to the next level!", x, y + 50)
+            if self.level - 1 == 1:
+                image(self.banana, x + (item_r * 6), y - (item_r * 1.5), item_r * 3, item_r * 3)
+            elif self.level - 1 == 2:
+                image(self.bread, x + (item_r * 6), y - (item_r * 1.5), item_r * 3, item_r * 3)
+            elif self.level - 1 == 3:
+                image(self.milk, x + (item_r * 6), y - (item_r * 1.5), item_r * 3, item_r * 3)
+            elif self.level - 1 == 4:
+                image(self.cereal, x + (item_r * 6), y - (item_r * 1.5), item_r * 5, item_r * 3)
+    
         elif self.screen == 5:
             text("You have ran out of items to dig!", x, y)
             text("Click to start again!", x, y + 50)    
@@ -373,7 +410,7 @@ class Game:
         fill(0,0,0)
         text("LEVEL " + str(self.level), 20, 40)
         text("FOOD: " + self.food, 20, 65)
-        text("Click to bring the magnet down!", 450, 40)
+        text("Click to bring the magnet down!", 500, 40)
         text("GOAL: " + str(self.goal) + " aed", 1000, 40)
         text("BALANCE: " + str(self.score) + " aed", 1000, 65)
         self.timer()
