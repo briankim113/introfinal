@@ -398,7 +398,7 @@ class Game:
             image(self.nutella, 950, y + item_r * 2, item_r * 3, item_r * 3)
 
         elif self.screen == 4:
-            text("Level " + str(self.level - 1) + " complete!", x, y)
+            text("Level " + str(self.level - 1) + " complete. You bought: ", x, y)
             text("Click to move to the next level!", x, y + 50)
             #displaying food item corresponding to each level
             if self.level - 1 == 1:
