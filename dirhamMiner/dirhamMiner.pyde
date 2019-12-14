@@ -5,31 +5,32 @@ item_r = 50
 player = Minim(this)
 
 class Student:
-    def __init__(self,x,y,r): #?img and frames?
+    def __init__(self,x,y,r): 
         self.x = x
         self.y = y
         self.r = r
-        self.h = r*4
-        self.w = r*3
+        self.h = r*4 #for student image
+        self.w = r*3 #for student image
         self.vx = 5
         self.direction = RIGHT
         self.alive = True
         self.img = loadImage(path + "/images/" + "student.png")
     
-    def update(self):
+    def update(self): #horizontal movement within the screen
         if game.student.x + game.student.r >= game.w:
             self.direction = LEFT
         if game.student.x <= game.student.r:
             self.direction = RIGHT
     
     def display(self):
-        # circle(self.x,self.y,self.r*2)
+        #displaying character image with horizontal flipping based on direction
         if self.direction == RIGHT:
             image(self.img, self.x-(self.r*1.5), self.y-(self.r*2), self.w, self.h)
         elif self.direction == LEFT:
             image(self.img, self.x-(self.r*1.5), self.y-(self.r*2), self.w, self.h, 2000, 0, 0, 3000)
         self.update()
-        if not game.tool.down:
+        if not game.tool.down: #student stops when the tool is moving down
+            #speed based on direction
             if self.direction == RIGHT:
                 game.student.vx = 6
             if self.direction == LEFT:
@@ -49,12 +50,13 @@ class Tool:
         self.sound = player.loadFile(path + "/sounds/rock.mp3")
 
     def move(self):
+        #placement of the tool and movement alongside student
         if game.student.direction == LEFT:
             self.x = game.student.x - game.student.r
         if game.student.direction == RIGHT:
             self.x = game.student.x + game.student.r
         self.y = game.student.y
-        self.y2 += game.tool.vy
+        self.y2 += game.tool.vy #for tool when it goes down
         
         #bounces
         if self.y2 + item_r == game.h:
@@ -66,11 +68,12 @@ class Tool:
             self.down = False
     
     def display(self):
-        #string
+        #rope
         pushStyle()
         stroke(0,0,0)
         strokeWeight(3)
         line(self.x, self.y - item_r/2, self.x, self.y2)
+        #handle
         if game.student.direction == RIGHT:
             line(game.student.x+item_r/2.5, self.y - item_r/2, self.x, self.y - item_r/2)
         elif game.student.direction == LEFT:
@@ -82,38 +85,38 @@ class Tool:
         fill(255,255,255)
         image(self.img, self.x-item_r/2, self.y2, item_r, item_r)
 
-        # circle(self.x, self.y2+item_r/2, item_r)
         
         self.move()
     
     
 class Item:
-    def __init__(self, x, y, type, subtype): #?img?
+    def __init__(self, x, y, type, subtype): 
         self.x = x
         self.y = y
         self.type = type #type 0 will be rocks, 1 for dirhams, and 2 for mystery bag
-        self.subtype = subtype #for mystery bag
+        self.subtype = subtype #for mystery bag randomization 
         self.hit = False
         
-        self.img0 = loadImage(path + "/images/" + "rock2.png")
+        self.img0 = loadImage(path + "/images/" + "rock.png")
         self.img1 = loadImage(path + "/images/" + "dirham.png")
-        self.img2 = loadImage(path + "/images/" + "mysterybag2.png")
+        self.img2 = loadImage(path + "/images/" + "mysterybag.png")
         
         self.sound = 0
         self.rock_sound = player.loadFile(path + "/sounds/rock.mp3")
         self.dirham_sound = player.loadFile(path + "/sounds/dirham.mp3")
         
     def display(self):
+        #assigning images based on item type
         if self.type == 0:
             img = self.img0
         elif self.type == 1:
             img = self.img1
         elif self.type == 2:
             img = self.img2
-                        
+        #  displaying           
         image(img, self.x-item_r/2, self.y-item_r/2, item_r, item_r)
                         
-        for i in game.items:
+        for i in game.items: #going through item list to check if the tool grabbed item
             if not i.hit:
                 if i.x - (item_r/1.3) <= game.tool.x and game.tool.x <= i.x + (item_r/1.3):
                     if game.tool.y2+item_r > i.y: #tool's bottom hits item's top
@@ -131,7 +134,8 @@ class Item:
                         self.sound = player.loadFile(path + "/sounds/rock.mp3")
                         self.sound.play()
                         game.score -= 5
-                    elif i.type == 1:
+                        #playing sound and editing score based on item type
+                    elif i.type == 1: 
                         self.sound = player.loadFile(path + "/sounds/dirham.mp3")
                         self.sound.play()
                         game.score += 10
@@ -139,21 +143,21 @@ class Item:
                         self.sound = player.loadFile(path + "/sounds/dirham.mp3")
                         self.sound.play()
                         game.score += 20
-                    game.items.remove(i)
+                    game.items.remove(i) #removing item from the list if it is picked up by tool
                     game.tool.down = False
         
-        if game.items == []:
+        if game.items == []: #if the player grabbed all items without achieving the goal
             game.screen = 5
         
 class Cat:
-    def __init__(self,x,y,r): #img
+    def __init__(self,x,y,r): 
         self.x = x
         self.y = y
         self.r = r 
         self.vx = 2
         self.vy = 2
         self.direction_list = [RIGHT, LEFT, UP, DOWN]
-        self.direction = self.direction_list[random.randint(0,3)]
+        self.direction = self.direction_list[random.randint(0,3)] #randomizing cat movement
         self.cat_sound = player.loadFile(path + "/sounds/cat.mp3")
         self.img = loadImage(path + "/images/" + "cat.png")
     
@@ -168,15 +172,15 @@ class Cat:
         self.y += self.vy
     
     def kill(self):
+        #kill condition based on the magnet position and cat position
         if self.x <= game.tool.x + (item_r/1.3) and self.x >= game.tool.x - (item_r/1.3) and self.y <= game.tool.y2 + (item_r/1.5) and self.y >= game.tool.y2 - (item_r/1.5):
-            self.cat_sound.rewind()
+            self.cat_sound.rewind() #cat sounds
             self.cat_sound.play()
-            game.screen = 2
+            game.screen = 2 #displaying game over screen
     
     def display(self):
         stroke(75,0,130)
         fill(75,0,130) 
-        # circle(self.x,self.y,self.r)
         image(self.img, self.x-self.r, self.y-self.r, self.r*2, self.r*2)
         self.move()
         self.kill()        
@@ -196,10 +200,11 @@ class Game:
         self.student = Student(self.w/2, self.g-50, item_r)
         self.tool = Tool(self.student.x - self.student.r, self.student.y)
 
-        self.cat = Cat(random.randint(1,20)*50, random.randint(self.g*2, self.h-50), item_r)
+        self.cat = Cat(random.randint(1,20)*50, random.randint(self.g*2, self.h-50), item_r) #starting from a random x,y
         self.items = []
-
-        self.banana = loadImage(path + "/images/" + "banana.png")
+        
+        #loading level images
+        self.banana = loadImage(path + "/images/" + "banana.png") 
         self.bread = loadImage(path + "/images/" + "bread.png")
         self.milk = loadImage(path + "/images/" + "milk.png")
         self.cereal = loadImage(path + "/images/" + "cereal.png")
@@ -214,6 +219,7 @@ class Game:
         self.create_items()  
             
     def update_cat(self):
+        #increasing cat speed with every level
         if self.level == 1:
             self.cat.vx = 1
             self.cat.vy = 1
@@ -235,6 +241,7 @@ class Game:
             self.cat.vy = 5
     
     def create_items(self):
+        #number of items per level
         if self.level == 1:
             num_rocks = 3
             num_dirhams = 4
@@ -256,10 +263,12 @@ class Game:
             num_dirhams = 0
             num_bags = 15
                                     
-        for num in range(num_rocks):
+        for num in range(num_rocks): #rocks
+            #valid position variable to ensure items don't overlap
             y = random.randrange(self.g + item_r, self.h - item_r, 60)
             valid = False
             while not valid:
+                #keeps randomizing until a position that is not in the list is generated
                 x = random.randrange(0 + item_r, self.w - item_r, 60)
                 valid = True
                 for item in self.items:
@@ -269,7 +278,7 @@ class Game:
     
             self.items.append(Item(x,y,0,2))
         
-        for num in range(num_dirhams):
+        for num in range(num_dirhams): #dirhams
             y = random.randrange(self.g + item_r, self.h - item_r, 60)
             valid = False
             while not valid:
@@ -298,12 +307,12 @@ class Game:
             self.items.append(Item(x,y,2,subtype))
             
     def display(self):
-        image(self.bg, 0, -400)
+        image(self.bg, 0, -400) #loading bg
         
         left = 200
         right = 800
               
-        #instructions
+        #Start screen; instructions
         if self.screen == -1:
             fill(0,0,0)
             textSize(40)
@@ -327,19 +336,15 @@ class Game:
         
         #game screen
         if self.screen == 0:
-            stroke(255,255,255)
-            #fill(135,206,235)
-            #rect(0, 0, self.w, self.g)
-            #fill(245,245,220)
-            #rect(0, self.g, self.w, self.h)
-            
+            #displaying ell elements 
             self.student.display()
             self.tool.display()
             self.cat.display()
             for i in self.items:
                 i.display()
             
-            self.board()
+            self.board() #upper board with level, goal, score, and timer
+            
             
             if self.level == 1:
                 self.goal = 15
@@ -368,10 +373,11 @@ class Game:
                 else: #pass all five screens = win
                     self.screen = 3
         
-        #game over screens - need images! - is laggy?
+    
         x = 400
         y = 400
         
+        #screens to load based on player performance
         if self.screen == 1:
             text("TIME IS UP - GAME OVER", x, y)
             text("Click to play again!", x, y + 50)
@@ -383,6 +389,7 @@ class Game:
         elif self.screen == 3:
             text("You WON! Congrats on your breakfast :)", x, y)
             text("Click to play again!", x, y + 50)
+            #displaying all food items they bought
             image(self.banana, 125, y + item_r * 2, item_r * 3, item_r * 3)
             image(self.bread, 325, y + item_r * 2, item_r * 3, item_r * 3)
             image(self.milk, 525, y + item_r * 2, item_r * 3, item_r * 3)
@@ -392,6 +399,7 @@ class Game:
         elif self.screen == 4:
             text("Level " + str(self.level - 1) + " complete!", x, y)
             text("Click to move to the next level!", x, y + 50)
+            #displaying food item corresponding to each level
             if self.level - 1 == 1:
                 image(self.banana, x + (item_r * 6), y - (item_r * 1.5), item_r * 3, item_r * 3)
             elif self.level - 1 == 2:
@@ -401,11 +409,11 @@ class Game:
             elif self.level - 1 == 4:
                 image(self.cereal, x + (item_r * 6), y - (item_r * 1.5), item_r * 5, item_r * 3)
     
-        elif self.screen == 5:
+        elif self.screen == 5: #for empty item list but unfulfilled goal
             text("You have ran out of items to dig!", x, y)
             text("Click to start again!", x, y + 50)    
 
-    def board(self):
+    def board(self): #upper board with information
         textSize(20)
         fill(0,0,0)
         text("LEVEL " + str(self.level), 20, 40)
@@ -416,7 +424,8 @@ class Game:
         self.timer()
         text("TIME: " + str(self.t) + " seconds", 1000, 115)
 
-    def timer(self):        
+    def timer(self):  
+        #timer      
         if frameCount % 60 == 0:
             self.t -= 1
         if self.t == 0:
@@ -435,12 +444,15 @@ def draw():
     game.display()
 
 def mouseClicked():
+    
     global game
+    #to move tool down
     if game.screen == 0:
         if game.tool.y2 == (game.tool.y + item_r/2):
             game.tool.down = True
             game.student.vx = 0
             game.tool.vy = 5
+    #to start game, restart, move between levels
     if game.screen == -1 or game.screen == 4:
         game.t = 30
         game.screen = 0
