@@ -17,9 +17,9 @@ class Student:
         self.img = loadImage(path + "/images/" + "student.png")
     
     def update(self): #horizontal movement within the screen
-        if game.student.x + game.student.r >= game.w:
+        if self.x + self.r >= game.w:
             self.direction = LEFT
-        if game.student.x <= game.student.r:
+        if self.x <= self.r:
             self.direction = RIGHT
     
     def display(self):
@@ -32,10 +32,10 @@ class Student:
         if not game.tool.down: #student stops when the tool is moving down
             #speed based on direction
             if self.direction == RIGHT:
-                game.student.vx = 6
+                self.vx = 6
             if self.direction == LEFT:
-                game.student.vx = -6
-        game.student.x += game.student.vx
+                self.vx = -6
+        self.x += self.vx
         
         
 class Tool:
@@ -56,14 +56,14 @@ class Tool:
         if game.student.direction == RIGHT:
             self.x = game.student.x + game.student.r
         self.y = game.student.y
-        self.y2 += game.tool.vy #for tool when it goes down
+        self.y2 += self.vy #for tool when it goes down
         
         #bounces
         if self.y2 + item_r == game.h:
             self.sound.rewind()
             self.vy = -5
             self.sound.play()
-        if self.y2 == game.tool.y + item_r/2:
+        if self.y2 == self.y + item_r/2:
             self.vy = 0
             self.down = False
     
@@ -73,6 +73,7 @@ class Tool:
         stroke(0,0,0)
         strokeWeight(3)
         line(self.x, self.y - item_r/2, self.x, self.y2)
+        
         #handle
         if game.student.direction == RIGHT:
             line(game.student.x+item_r/2.5, self.y - item_r/2, self.x, self.y - item_r/2)
@@ -84,7 +85,6 @@ class Tool:
         stroke(255,255,255)
         fill(255,255,255)
         image(self.img, self.x-item_r/2, self.y2, item_r, item_r)
-
         
         self.move()
     
@@ -158,7 +158,7 @@ class Cat:
         self.vy = 2
         self.direction_list = [RIGHT, LEFT, UP, DOWN]
         self.direction = self.direction_list[random.randint(0,3)] #randomizing cat movement
-        self.cat_sound = player.loadFile(path + "/sounds/cat.mp3")
+        self.sound = player.loadFile(path + "/sounds/cat.mp3")
         self.img = loadImage(path + "/images/" + "cat.png")
     
     def move(self):
@@ -174,8 +174,8 @@ class Cat:
     def kill(self):
         #kill condition based on the magnet position and cat position
         if self.x <= game.tool.x + (item_r/1.3) and self.x >= game.tool.x - (item_r/1.3) and self.y <= game.tool.y2 + (item_r/1.5) and self.y >= game.tool.y2 - (item_r/1.5):
-            self.cat_sound.rewind() #cat sounds
-            self.cat_sound.play()
+            self.sound.rewind() #cat sounds
+            self.sound.play()
             game.screen = 2 #displaying game over screen
     
     def display(self):
@@ -262,9 +262,11 @@ class Game:
             num_rocks = 0
             num_dirhams = 0
             num_bags = 15
+                       
                                     
+        #append at valid position variable to ensure items don't overlap
+             
         for num in range(num_rocks): #rocks
-            #valid position variable to ensure items don't overlap
             y = random.randrange(self.g + item_r, self.h - item_r, 60)
             valid = False
             while not valid:
@@ -306,6 +308,7 @@ class Game:
     
             self.items.append(Item(x,y,2,subtype))
             
+            
     def display(self):
         image(self.bg, 0, -400) #loading bg
         
@@ -345,7 +348,6 @@ class Game:
             
             self.board() #upper board with level, goal, score, and timer
             
-            
             if self.level == 1:
                 self.goal = 15
                 self.food = "Banana"
@@ -372,7 +374,6 @@ class Game:
                     self.create_items()
                 else: #pass all five screens = win
                     self.screen = 3
-        
     
         x = 400
         y = 400
@@ -444,7 +445,6 @@ def draw():
     game.display()
 
 def mouseClicked():
-    
     global game
     #to move tool down
     if game.screen == 0:
@@ -458,4 +458,5 @@ def mouseClicked():
         game.screen = 0
     elif game.screen != 0:
         game.background_sound.close()
+        #reinstantiate once the game is over
         game = Game(1200, 800, 230)
